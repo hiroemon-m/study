@@ -35,12 +35,12 @@ class Model(nn.Module):
 
 
 class Optimizer:
-    def __init__(self, edges, feats, model: Model, size: int,persona,persona_num):
+    def __init__(self, edges, feats, model: Model, size: int,persona_ration,persona_num):
         self.edges = edges
         self.feats = feats
         self.model = model
         self.size = size
-        self.persona = persona
+        self.persona_ration = persona_ration
         self.persona_num = persona_num
         self.optimizer = optim.SGD(self.model.parameters(), lr=0.01)
         return
@@ -51,47 +51,41 @@ class Optimizer:
         self.optimizer.zero_grad()
         dot_product = torch.matmul(feat, torch.t(feat)).to(device)#内積
 
-        #dot_product = dot_product.div((np.linalg.norm(feat))*(np.linalg.norm(feat.t())))
-        #print("dot",dot_product.shape)
-        #simはそれぞれのデータの和(32x32)->(32x1)
+        #alpha
         sim = torch.mul(edge, dot_product).sum(1) #行列積
-
-        #ハード
-        #print(self.persona)
-        persona_alpha = self.model.alpha[self.persona]
-        #print("persona_alpha",self.model.alpha[self.persona])
-        #print(persona_alpha.size())
-        #print("persona_alpha",persona_alpha.size())
-        #print(persona_alpha)
-        #32x1
-        #print(sim.size())
-        sim = torch.dot(sim, persona_alpha)
+        persona_alpha = torch.mm(self.persona_ration,self.model.alpha.view(persona_num,1))
+        sim = torch.dot(sim, persona_alpha.view(32))
         sim = torch.add(sim, 0.001)
-        #print(sim.size())
-        #print("sim",sim)
 
-       
-        persona_beta = self.model.beta[self.persona]
-
-
-        #print("persona_beta",persona_beta.size())
-        costs = torch.dot(edge.sum(1), persona_beta)
+        #beta
+        persona_beta = torch.mm(self.persona_ration,self.model.beta.view(persona_num,1))
+        costs = torch.dot(edge.sum(1), persona_beta.view(32))
         costs = torch.add(costs, 0.001)
-        #print("costs",costs.shape)
-        reward = torch.sub(sim, costs)
-        #ここから下に行追加
-        #reward = torch.sum(reward,1)
-        loss = -reward
-        #ここまで
-        #print("reward",reward.shape)
-        #loss = -reward.sum()
-        print("loss",loss)        
 
+        reward = torch.sub(sim, costs)
+        loss = -reward
+
+        old_alpha = model.state_dict()["alpha"].clone().detach()
+        old_beta = model.state_dict()["beta"].clone().detach()
+        
+    
+        print("loss",loss)        
         loss.backward()
         del loss
-        print("alpha",alpha)
-        print("beta",beta)
         self.optimizer.step()
+
+        diff_alpha = model.state_dict()["alpha"] - old_alpha
+        diff_beta = model.state_dict()["beta"] - old_beta
+        min_alpha, _ = torch.min(diff_alpha, dim=0)
+        min_beta, _ = torch.min(diff_beta, dim=0)
+        print(max(min_alpha,min_beta) < 0.01)
+        print(max(min_alpha,min_beta))
+        if max(min_alpha,min_beta) < 0.01:
+            is_continued = False
+
+
+
+        
 
 
     def export_param(self):
@@ -114,22 +108,21 @@ if __name__ == "__main__":
     # data = TwitterData(T=10)
     # data = attr_graph_dynamic_spmat_twitter(T=10)
 
+    #データのロード
     data = init_real_data()
-    #print(data.adj)
-    #print(data.feature)
+    #データのサイズ
     data_size = 32
-    #ペルソナ５個の場合のアルファベータ
-    persona_num = 16
-    data_persona = []
-    path = "/Users/matsumoto-hirotomo/Downloads/netevolve-hard/data/NIPS/data_norm{}.csv".format(int(persona_num))
-    print(path)
-    csvfile = open(path, 'r')
-    gotdata = csv.reader(csvfile)
-    for row in gotdata:
-        data_persona.append(int(row[2]))
-    csvfile.close()
 
-    
+
+    #ペルソナの設定
+    #ペルソナの数[3,4,5,6,8]
+    persona_num = 3
+    data_persona = []
+    path = "data/NIPS/gamma{}.npy".format(int(persona_num))
+    print(path)
+    persona_ration = np.load(path)
+    persona_ration = persona_ration.astype("float32")
+    persona_ration = torch.from_numpy(persona_ration).to(device)
 
     alpha = torch.from_numpy(
         np.array(
@@ -144,11 +137,27 @@ if __name__ == "__main__":
             dtype=np.float32,
         ),
     ).to(device)
-
+    c = 1
     model = Model(alpha, beta)
-    optimizer = Optimizer(data.adj, data.feature, model, data_size,data_persona,persona_num)
-    for t in range(5):
-        optimizer.optimize(t)
-    optimizer.export_param()
+    is_continued = True
+    while is_continued:
+        if c == 1:
+            optimizer = Optimizer(data.adj, data.feature, model, data_size,persona_ration,persona_num)
+        else:
+            print(new_model.state_dict()["alpha"].clone().detach())
+            model = Model(new_model.state_dict()["alpha"].clone().detach(),  new_model.state_dict()["beta"].clone().detach())
+            optimizer = Optimizer(data.adj, data.feature, model, data_size,persona_ration,persona_num)
+
+        for t in range(5):
+            optimizer.optimize(t)
+        model_state_dict = model.state_dict()
+        new_model = Model(model_state_dict["alpha"],model_state_dict["beta"])
+     
+        print("ee",new_model.state_dict())
+        c += 1
+       
+        if c == 5:
+            is_continued = False
+        optimizer.export_param()
 
  

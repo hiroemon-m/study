@@ -52,14 +52,12 @@ def execute_data() -> None:
             np_beta.append(np.float32(datas[1]))
 
     #ペルソナの取り出し
-    persona_num = 6
-    data_persona = []
-    path = "/Users/matsumoto-hirotomo/Downloads/netevolve-hard/data/NIPS/data_norm{}.csv".format(int(persona_num))
-    csvfile = open(path, 'r')
-    gotdata = csv.reader(csvfile)
-    for row in gotdata:
-        data_persona.append(int(row[2]))
-    csvfile.close()
+    #ペルソナの数[3,4,5,6,8]
+    persona_num = 8
+    path = "data/NIPS/gamma{}.npy".format(int(persona_num))
+    persona_ration = np.load(path)
+    persona_ration = persona_ration.astype("float32")
+    persona_ration = torch.from_numpy(persona_ration).to(device)
 
     T = np.array(
         [0.8 for i in range(len(np_alpha))],
@@ -93,7 +91,7 @@ def execute_data() -> None:
         dtype=np.float32,
     )
     torch.autograd.set_detect_anomaly(True)
-    agent_policy = AgentPolicy(T=T, e=e, r=r, w=w, persona=data_persona)
+    agent_policy = AgentPolicy(T=T, e=e, r=r, w=w, persona_ration=persona_ration)
     agent_optimizer = optim.Adadelta(agent_policy.parameters())
 
     N = len(np_alpha)
@@ -112,7 +110,7 @@ def execute_data() -> None:
         temper=T,
         alpha=alpha,
         beta=beta,
-        persona = data_persona
+        persona_ration = persona_ration
     )
     #print(load_data.feature)
     
@@ -135,11 +133,11 @@ def execute_data() -> None:
             #print("nieghbor",neighbor_state)
             #print("feat",feat)
             action_probs, predict_feat, _ = agent_policy.predict(
-                edges=neighbor_state, attributes=feat, N=N,persona=data_persona
+                edges=neighbor_state, attributes=feat, N=N,persona_ration=persona_ration
             )
             #print(action_probs)
             field.update_attributes(predict_feat.detach())
-            reward = field.step(action_probs.detach().clone(),data_persona)
+            reward = field.step(action_probs.detach().clone(),persona_ration)
             #print(predict_feat)
 
             total_reward += reward
@@ -199,7 +197,7 @@ def execute_data() -> None:
             #print("stae",neighbor_state)
             #print("feat",feat)
             action_probs, predict_feat, attr_probs = agent_policy.predict(
-                edges=neighbor_state, attributes=feat, N=N,persona=data_persona
+                edges=neighbor_state, attributes=feat, N=N,persona_ration=persona_ration
             )
             del neighbor_state, feat
 
@@ -207,7 +205,7 @@ def execute_data() -> None:
 
             #print(action_probs[0])
             #print(predict_feat[0])
-            reward = field.step(action_probs,data_persona)
+            reward = field.step(action_probs,persona_ration)
 
             target_prob = torch.ravel(predict_feat).to("cpu")
             del attr_probs
