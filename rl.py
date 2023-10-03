@@ -42,7 +42,7 @@ def execute_data() -> None:
     #alpha,betaの読み込み
     np_alpha = []
     np_beta = []
-    with open("model.param.data.fast", "r") as f:
+    with open("data/DBLP/model.param.data.fast", "r") as f:
         lines = f.readlines()
         for index, line in enumerate(
             tqdm(lines, desc="load data", postfix="range", ncols=80)
@@ -52,9 +52,9 @@ def execute_data() -> None:
             np_beta.append(np.float32(datas[1]))
 
     #ペルソナの取り出し
-    persona_num = 6
+    persona_num = 12
     data_persona = []
-    path = "/Users/matsumoto-hirotomo/Downloads/netevolve-hard/data/NIPS/data_norm{}.csv".format(int(persona_num))
+    path = "data/DBLP/data_norm{}.csv".format(int(persona_num))
     csvfile = open(path, 'r')
     gotdata = csv.reader(csvfile)
     for row in gotdata:

@@ -95,7 +95,7 @@ class Optimizer:
 
 
     def export_param(self):
-        with open("model.param.data.fast", "w") as f:
+        with open("/Users/matsumoto-hirotomo/study/data/DBLP/model.param.data.fast", "w") as f:
             max_alpha = 1.0
             max_beta = 1.0
             #ペルソナの数
@@ -117,11 +117,11 @@ if __name__ == "__main__":
     data = init_real_data()
     #print(data.adj)
     #print(data.feature)
-    data_size = 32
-    #ペルソナ５個の場合のアルファベータ
-    persona_num = 16
+    data_size = len(data.adj[0])
+    #ペルソナの設定
+    persona_num = 12
     data_persona = []
-    path = "/Users/matsumoto-hirotomo/Downloads/netevolve-hard/data/NIPS/data_norm{}.csv".format(int(persona_num))
+    path = "data/DBLP/data_norm{}.csv".format(int(persona_num))
     print(path)
     csvfile = open(path, 'r')
     gotdata = csv.reader(csvfile)
