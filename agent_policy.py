@@ -16,7 +16,7 @@ device = config.select_device
 
 
 class AgentPolicy(nn.Module):
-    def __init__(self, T, e, r, w, persona) -> None:
+    def __init__(self, T, e, r, w) -> None:
         super().__init__()
         self.T = nn.Parameter(
             torch.tensor(T).float().to(device), requires_grad=True
@@ -31,10 +31,9 @@ class AgentPolicy(nn.Module):
             torch.tensor(w).float().view(-1, 1).to(device), requires_grad=True
         )
         
-        self.persona = persona
 
     def forward(
-        self, attributes, edges, N,persona
+        self, attributes, edges, N
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
         edges = (edges > 0).float().to(device)
@@ -42,11 +41,11 @@ class AgentPolicy(nn.Module):
         #隣接ノードと自分の特徴量を集約する
         #print(edges.size()) 32x32
         #print(attributes.size())32x2411
-        tmp_tensor = self.W[self.persona] * torch.matmul(edges, attributes)
+        tmp_tensor = self.W * torch.matmul(edges, attributes)
         #tmp_tensor = torch.matmul(edges, attributes)
         
         #feat =  0.5*attributes + 0.5*tmp_tensor
-        r = self.r[self.persona]
+        r = self.r
 
         r = r + 1e-8
         feat = r * attributes + tmp_tensor * (1 - r)
@@ -58,7 +57,7 @@ class AgentPolicy(nn.Module):
         # Compute similarity
         x = torch.mm(feat, feat.t())
         #print(x)
-        x = x.div(self.T[self.persona]).exp().mul(self.e[self.persona])
+        x = x.div(self.T).exp().mul(self.e)
 
         min_values = torch.min(x, dim=0).values
         # # 各列の最大値 (dim=0 は列方向)
@@ -68,17 +67,6 @@ class AgentPolicy(nn.Module):
         #print(x[0])
 
         x = torch.tanh(x)
-
-        #x = torch.sigmoid(x)
-        #print(x[0])
-        #new_x = x.clone()
-        #new_x[x<0]=0
-        #print(x)
-        #y = torch.tanh((1-sim).div(self.T[self.persona]).exp().mul(self.e[self.persona]))
-        #print("prob", x)
-        #new_x = x.clone()
-        #new_x[x<y] = 0
-        #print("prob", new_x)
 
 
         return x, feat, feat_prob
@@ -93,6 +81,6 @@ class AgentPolicy(nn.Module):
 
 
     def predict(
-        self, attributes, edges, N,persona
+        self, attributes, edges, N
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        return self.forward(attributes, edges, N,persona)
+        return self.forward(attributes, edges, N)
