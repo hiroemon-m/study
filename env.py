@@ -14,13 +14,12 @@ device = config.select_device
 
 
 class Env:
-    def __init__(self, edges, feature, temper, alpha, beta,persona) -> None:
+    def __init__(self, edges, feature, temper, alpha, beta) -> None:
         self.edges = edges
         self.feature = feature.to(device)
         self.temper = temper
         self.alpha = alpha
         self.beta = beta
-        self.persona = persona
         # 特徴量の正規化
         norm = self.feature.norm(dim=1)[:, None] + 1e-8
         self.feature = self.feature.div_(norm)
@@ -36,16 +35,15 @@ class Env:
         self.feature = self.feature.div(norm)
         self.feature_t = self.feature.t()
     #一つ進める
-    def step(self, actions,persona):
-        #actionsの確率に基づいて行動を決める
-        #print(actions)
-        next_mat = actions.bernoulli()   
+    def step(self, actions):
+        next_mat = actions.bernoulli()
         self.edges = next_mat
         dot_product = torch.mm(self.feature, self.feature_t)
-        reward = next_mat.mul(dot_product).mul(self.alpha[self.persona])
-        costs = next_mat.mul(self.beta[self.persona])
+        reward = next_mat.mul(dot_product).mul(self.alpha)
+        costs = next_mat.mul(self.beta)
         reward = reward.sub(costs)
         return reward.sum()
+
 
     #特徴量の更新
     def update_attributes(self, attributes):
