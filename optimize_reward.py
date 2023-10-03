@@ -56,6 +56,7 @@ class Optimizer:
         loss = -reward.sum()
 
         loss.backward()
+        print(loss)
         del loss
         self.optimizer.step()
 
