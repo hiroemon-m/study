@@ -95,7 +95,7 @@ if __name__ == "__main__":
     #データのロード
     data = init_real_data()
     #データのサイズ
-    data_size = 32
+    data_size = len(data.adj[0])
 
 
     #ペルソナの設定
