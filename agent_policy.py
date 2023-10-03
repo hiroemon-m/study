@@ -74,7 +74,7 @@ class AgentPolicy(nn.Module):
         #new_x = x.clone()
         #new_x[x<0]=0
         #print(x)
-        #y = torch.tanh((1-sim).div(self.T[self.persona]).exp().mul(self.e[self.persona]))
+        ##y = torch.tanh((1-sim).div(self.T[self.persona]).exp().mul(self.e[self.persona]))
         #print("prob", x)
         #new_x = x.clone()
         #new_x[x<y] = 0
