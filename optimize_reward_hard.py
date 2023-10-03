@@ -51,7 +51,7 @@ class Optimizer:
         self.optimizer.zero_grad()
         dot_product = torch.matmul(feat, torch.t(feat)).to(device)#内積
 
-        #alpha
+        #aalpha
         sim = torch.mul(edge, dot_product).sum(1) #行列積
         persona_alpha = torch.mm(self.persona_ration,self.model.alpha.view(persona_num,1))
         sim = torch.dot(sim, persona_alpha.view(32))
