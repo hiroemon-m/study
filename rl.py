@@ -51,8 +51,8 @@ def execute_data() -> None:
             np_alpha.append(np.float32(datas[0]))
             np_beta.append(np.float32(datas[1]))
 
-    #ペルソナの取り出し
-    persona_num = 12
+    #ペルソナの取り出し[3,4,6,8,12]
+    persona_num = 3
     data_persona = []
     path = "data/DBLP/data_norm{}.csv".format(int(persona_num))
     csvfile = open(path, 'r')

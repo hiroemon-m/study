@@ -118,8 +118,8 @@ if __name__ == "__main__":
     #print(data.adj)
     #print(data.feature)
     data_size = len(data.adj[0])
-    #ペルソナの設定
-    persona_num = 12
+    #ペルソナの設定[3,4,6,8,12]
+    persona_num = 3
     data_persona = []
     path = "data/DBLP/data_norm{}.csv".format(int(persona_num))
     print(path)
