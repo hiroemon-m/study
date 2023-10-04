@@ -52,9 +52,9 @@ def execute_data() -> None:
             np_beta.append(np.float32(datas[1]))
 
     #ペルソナの取り出し
-    #ペルソナの数[3,4,5,6,8]
-    persona_num = 8
-    path = "data/NIPS/gamma{}.npy".format(int(persona_num))
+    #ペルソナの数[3,4,6,8,12]
+    persona_num = 12
+    path = "data/DBLP/gamma{}.npy".format(int(persona_num))
     persona_ration = np.load(path)
     persona_ration = persona_ration.astype("float32")
     persona_ration = torch.from_numpy(persona_ration).to(device)

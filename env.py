@@ -46,11 +46,11 @@ class Env:
         dot_product = torch.mm(self.feature, self.feature_t).to(device)
         sim = torch.mul(self.edges,dot_product).sum(1)
         persona_alpha = torch.mm(self.persona_ration,self.alpha.view(self.persona_ration.size()[1],1))
-        sim = torch.dot(sim, persona_alpha.view(32))
+        sim = torch.dot(sim, persona_alpha.view(500))
         sim = torch.add(sim, 0.001)
 
         persona_beta = torch.mm(self.persona_ration,self.beta.view(self.persona_ration.size()[1],1))
-        costs = torch.dot(self.edges.sum(1), persona_beta.view(32))
+        costs = torch.dot(self.edges.sum(1), persona_beta.view(500))
         costs = torch.add(costs, 0.001)
         reward = torch.sub(sim, costs)
         

@@ -50,16 +50,14 @@ class Optimizer:
         edge = self.edges[t].to(device)
         self.optimizer.zero_grad()
         dot_product = torch.matmul(feat, torch.t(feat)).to(device)#内積
-
-        #alpha
         sim = torch.mul(edge, dot_product).sum(1) #行列積
         persona_alpha = torch.mm(self.persona_ration,self.model.alpha.view(persona_num,1))
-        sim = torch.dot(sim, persona_alpha.view(32))
+        sim = torch.dot(sim, persona_alpha.view(self.size))
         sim = torch.add(sim, 0.001)
 
         #beta
         persona_beta = torch.mm(self.persona_ration,self.model.beta.view(persona_num,1))
-        costs = torch.dot(edge.sum(1), persona_beta.view(32))
+        costs = torch.dot(edge.sum(1), persona_beta.view(self.size))
         costs = torch.add(costs, 0.001)
 
         reward = torch.sub(sim, costs)
@@ -98,10 +96,11 @@ if __name__ == "__main__":
     data_size = len(data.adj[0])
 
 
+
     #ペルソナの設定
-    #ペルソナの数[3,4,5,6,8]
-    persona_num = 8
-    path = "data/NIPS/gamma{}.npy".format(int(persona_num))
+    #ペルソナの数[3,4,6,8,12]
+    persona_num = 12
+    path = "data/DBLP/gamma{}.npy".format(int(persona_num))
     print(path)
     persona_ration = np.load(path)
     persona_ration = persona_ration.astype("float32")
