@@ -119,7 +119,7 @@ if __name__ == "__main__":
     #print(data.feature)
     data_size = 32
     #ペルソナ５個の場合のアルファベータ
-    persona_num = 16
+    persona_num = 1
     data_persona = []
     path = "/Users/matsumoto-hirotomo/Downloads/netevolve-hard/data/NIPS/data_norm{}.csv".format(int(persona_num))
     print(path)
