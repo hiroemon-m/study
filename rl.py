@@ -23,7 +23,7 @@ os.environ["OMP_NUM_THREADS"] = "16"
 os.environ["MKL_NUM_THREADS"] = "16"
 os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
 print(torch.__config__.parallel_info())
-episodes = 32
+episodes = 64
 story_count = 5
 generate_count = 5
 device = config.select_device
@@ -52,7 +52,7 @@ def execute_data() -> None:
             np_beta.append(np.float32(datas[1]))
 
     #ペルソナの取り出し[3,4,6,8,12]
-    persona_num = 3
+    persona_num = 12
     data_persona = []
     path = "data/DBLP/data_norm{}.csv".format(int(persona_num))
     csvfile = open(path, 'r')
