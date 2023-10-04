@@ -23,7 +23,7 @@ os.environ["OMP_NUM_THREADS"] = "16"
 os.environ["MKL_NUM_THREADS"] = "16"
 os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
 print(torch.__config__.parallel_info())
-episodes = 32
+episodes = 64
 story_count = 5
 generate_count = 5
 device = config.select_device
