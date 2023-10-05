@@ -52,7 +52,7 @@ def execute_data() -> None:
             np_beta.append(np.float32(datas[1]))
 
     #ペルソナの取り出し
-    persona_num = 1
+    persona_num = 2
     data_persona = []
     path = "/Users/matsumoto-hirotomo/Downloads/netevolve-hard/data/NIPS/data_norm{}.csv".format(int(persona_num))
     csvfile = open(path, 'r')
@@ -60,6 +60,12 @@ def execute_data() -> None:
     for row in gotdata:
         data_persona.append(int(row[2]))
     csvfile.close()
+
+    #-----------
+    #ペルソナ1
+    #data_persona = [0 for i in range(32)]
+
+    #-----------
 
     T = np.array(
         [0.8 for i in range(len(np_alpha))],

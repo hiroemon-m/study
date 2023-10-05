@@ -119,7 +119,7 @@ if __name__ == "__main__":
     #print(data.feature)
     data_size = 32
     #ペルソナ５個の場合のアルファベータ
-    persona_num = 1
+    persona_num = 2
     data_persona = []
     path = "/Users/matsumoto-hirotomo/Downloads/netevolve-hard/data/NIPS/data_norm{}.csv".format(int(persona_num))
     print(path)
@@ -129,7 +129,12 @@ if __name__ == "__main__":
         data_persona.append(int(row[2]))
     csvfile.close()
 
-    
+    #-----------
+    #ペルソナ1
+    #data_persona = [0 for i in range(data_size)]
+
+    #-----------
+        
 
     alpha = torch.from_numpy(
         np.array(
