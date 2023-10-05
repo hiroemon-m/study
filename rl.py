@@ -23,7 +23,7 @@ os.environ["OMP_NUM_THREADS"] = "16"
 os.environ["MKL_NUM_THREADS"] = "16"
 os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
 print(torch.__config__.parallel_info())
-episodes = 64
+episodes = 32
 story_count = 5
 generate_count = 5
 device = config.select_device
@@ -42,7 +42,7 @@ def execute_data() -> None:
     #alpha,betaの読み込み
     np_alpha = []
     np_beta = []
-    with open("data/DBLP/model.param.data.fast", "r") as f:
+    with open("model.param.data.fast", "r") as f:
         lines = f.readlines()
         for index, line in enumerate(
             tqdm(lines, desc="load data", postfix="range", ncols=80)
@@ -52,14 +52,26 @@ def execute_data() -> None:
             np_beta.append(np.float32(datas[1]))
 
     #ペルソナの取り出し[3,4,6,8,12]
-    persona_num = 12
+    persona_num = 2
     data_persona = []
+    #ペルソナ2の時
+    #--------------
     path = "data/DBLP/data_norm{}.csv".format(int(persona_num))
     csvfile = open(path, 'r')
     gotdata = csv.reader(csvfile)
     for row in gotdata:
         data_persona.append(int(row[2]))
     csvfile.close()
+    #-----------
+
+
+
+    #ペルソナ1
+    #----------------
+    #print(data_persona)
+    #data_persona = [0 for i in range(500)]
+    #print(data_persona)
+    #--------
 
     T = np.array(
         [0.8 for i in range(len(np_alpha))],

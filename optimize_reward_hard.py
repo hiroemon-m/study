@@ -61,10 +61,10 @@ class Optimizer:
         persona_alpha = self.model.alpha[self.persona]
         #print("persona_alpha",self.model.alpha[self.persona])
         #print(persona_alpha.size())
-        #print("persona_alpha",persona_alpha.size())
+        print("persona_alpha",persona_alpha.size())
         #print(persona_alpha)
         #32x1
-        #print(sim.size())
+        print(sim.size())
         sim = torch.dot(sim, persona_alpha)
         sim = torch.add(sim, 0.001)
         #print(sim.size())
@@ -95,7 +95,7 @@ class Optimizer:
 
 
     def export_param(self):
-        with open("/Users/matsumoto-hirotomo/study/data/DBLP/model.param.data.fast", "w") as f:
+        with open("model.param.data.fast", "w") as f:
             max_alpha = 1.0
             max_beta = 1.0
             #ペルソナの数
@@ -118,16 +118,24 @@ if __name__ == "__main__":
     #print(data.adj)
     #print(data.feature)
     data_size = len(data.adj[0])
-    #ペルソナの設定[3,4,6,8,12]
-    persona_num = 12
+    #ペルソナの設定[2,3,4,6,8,12]
+    persona_num = 1
     data_persona = []
     path = "data/DBLP/data_norm{}.csv".format(int(persona_num))
     print(path)
-    csvfile = open(path, 'r')
-    gotdata = csv.reader(csvfile)
-    for row in gotdata:
-        data_persona.append(int(row[2]))
-    csvfile.close()
+    #csvfile = open(path, 'r')
+    #gotdata = csv.reader(csvfile)
+    #for row in gotdata:
+    #    data_persona.append(int(row[2]))
+    #csvfile.close()
+
+    #ペルソナ1
+    #----------------
+    print(data_persona)
+    data_persona = [0 for i in range(data_size)]
+    print(data_persona)
+    #--------
+
 
     
 
