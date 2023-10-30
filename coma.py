@@ -477,8 +477,8 @@ def execute_data():
         edges=load_data.adj[LEARNED_TIME].clone(),
         feature=load_data.feature[LEARNED_TIME].clone(),
         temper=T,
-        #alpha=alpha,
-        #beta=beta,
+        alpha=alpha,
+        beta=beta,
     )
 
 

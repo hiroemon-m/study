@@ -14,14 +14,15 @@ device = config.select_device
 
 
 class Env:
-    def __init__(self, edges, feature, temper) -> None:
+    def __init__(self, edges, feature, temper, alpha, beta,persona) -> None:
         self.edges = edges
         self.feature = feature.to(device)
         self.temper = temper
-        #self.alpha = alpha
-        self.alpha = 1
-        #self.beta = beta
+        self.alpha = alpha
+        #self.alpha = 1
+        self.beta = beta
         self.beta = 0.1
+        self.persona = persona
         # 特徴量の正規化
         norm = self.feature.norm(dim=1)[:, None] + 1e-8
         self.feature = self.feature.div_(norm)
@@ -51,9 +52,9 @@ class Env:
 
         self.feature_t = self.feature.t()
         dot_product = torch.mm(self.feature, self.feature_t)
-        reward = next_mat.mul(dot_product).mul(self.alpha)
+        reward = next_mat.mul(dot_product).mul(self.alpha[self.persona])
   
-        costs = next_mat.mul(self.beta)
+        costs = next_mat.mul(self.beta[self.persona])
   
         reward = reward.sub(costs)
    
