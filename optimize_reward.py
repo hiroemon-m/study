@@ -16,11 +16,6 @@ from init_real_data import init_real_data
 device = config.select_device
 
 
-class Interest(IntEnum):
-    RED = 2
-    BLUE = 1
-
-
 class Model(nn.Module):
     def __init__(self, alpha, beta):
         super().__init__()
@@ -60,14 +55,10 @@ class Optimizer:
         del loss
         self.optimizer.step()
         
-        #グラフデータの可視化
-        #--------------
-        graph_data = self.edges[t].numpy()
-        np.save('DBLP_graph_data={}.npy'.format(str(t)), graph_data)
-        #--------------
 
-    def export_param(self):
-        with open("model.param.data.fast", "w") as f:
+
+    def export_param(self,k):
+        with open("experiment_data/NIPS/incomplete/drop={}/model.param.data.fast".format(k), "w") as f:
             max_alpha = 1.0
             max_beta = 1.0
 
@@ -81,28 +72,36 @@ class Optimizer:
 
 
 if __name__ == "__main__":
-    # data = attr_graph_dynamic_spmat_NIPS(T=10)
-    # data = attr_graph_dynamic_spmat_DBLP(T=10)
-    # data = TwitterData(T=10)
-    # data = attr_graph_dynamic_spmat_twitter(T=10)
-    data = init_real_data()
-    data_size = len(data.adj[0])
+    for k in range(32):
+        data = init_real_data()
 
-    alpha = torch.from_numpy(
-        np.array(
-            [1.0 for i in range(data_size)],
-            dtype=np.float32,
-        ),
-    ).to(device)
+        data_size = len(data.adj[0])
 
-    beta = torch.from_numpy(
-        np.array(
-            [1.0 for i in range(data_size)],
-            dtype=np.float32,
-        ),
-    ).to(device)
-    model = Model(alpha, beta)
-    optimizer = Optimizer(data.adj, data.feature, model, data_size)
-    for t in range(10):
-        optimizer.optimize(t)
-    optimizer.export_param()
+        alpha = torch.from_numpy(
+            np.array(
+                [1.0 for i in range(data_size)],
+                dtype=np.float32,
+            ),
+        ).to(device)
+
+        beta = torch.from_numpy(
+            np.array(
+                [1.0 for i in range(data_size)],
+                dtype=np.float32,
+            ),
+        ).to(device)
+        model = Model(alpha, beta)
+
+        
+        #あるノードにi関する情報を取り除く
+        #list[tensor]のキモい構造なので
+        data.adj[4][k,:] = 0
+        data.adj[4][:,k] = 0
+        #data.feature[4][i][:] = 0
+        
+        
+        optimizer = Optimizer(data.adj, data.feature, model, data_size)
+        for t in range(5):
+            optimizer.optimize(t)
+        optimizer.export_param(k) 
+    
