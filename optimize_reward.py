@@ -57,8 +57,8 @@ class Optimizer:
         
 
 
-    def export_param(self,k):
-        with open("experiment_data/NIPS/incomplete/drop={}/model.param.data.fast".format(k), "w") as f:
+    def export_param(self,t,k):
+        with open("experiment_data/NIPS/incomplete/t={}/drop={}/model.param.data.fast".format(t,k), "w") as f:
             max_alpha = 1.0
             max_beta = 1.0
 
@@ -91,17 +91,17 @@ if __name__ == "__main__":
             ),
         ).to(device)
         model = Model(alpha, beta)
-
+        skiptime = 0
         
         #あるノードにi関する情報を取り除く
         #list[tensor]のキモい構造なので
-        data.adj[4][k,:] = 0
-        data.adj[4][:,k] = 0
+        data.adj[skiptime][k,:] = 0
+        data.adj[skiptime][:,k] = 0
         #data.feature[4][i][:] = 0
         
         
         optimizer = Optimizer(data.adj, data.feature, model, data_size)
         for t in range(5):
             optimizer.optimize(t)
-        optimizer.export_param(k) 
+        optimizer.export_param(skiptime+1,k) 
     

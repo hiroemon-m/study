@@ -136,6 +136,7 @@ class attr_graph_dynamic_spmat_NIPS:
             self.Amat_list.append(A_matrix)
             G_matrix = G_matrix.T.dot(G_matrix)
             #print(G_matrix)
+            #G_matrixは接続情報
             G_matrix[G_matrix > 0] = 1.0
             #print(G_matrix)
             #print(G_matrix.getrow(0))
