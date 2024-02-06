@@ -57,8 +57,8 @@ class Optimizer:
         
 
 
-    def export_param(self,t,k):
-        with open("experiment_data/NIPS/incomplete/t={}/drop={}/model.param.data.fast".format(t,k), "w") as f:
+    def export_param(self,t,p,k):
+        with open("experiment_data/DBLP/incomplete/t={}/percent={}/attempt={}/model.param.data.fast".format(t,p,k), "w") as f:
             max_alpha = 1.0
             max_beta = 1.0
 
@@ -72,7 +72,8 @@ class Optimizer:
 
 
 if __name__ == "__main__":
-    for k in range(32):
+    p=75
+    for k in range(15):
         data = init_real_data()
 
         data_size = len(data.adj[0])
@@ -91,17 +92,21 @@ if __name__ == "__main__":
             ),
         ).to(device)
         model = Model(alpha, beta)
-        skiptime = 0
+        skiptime = 4
         
         #あるノードにi関する情報を取り除く
         #list[tensor]のキモい構造なので
-        data.adj[skiptime][k,:] = 0
-        data.adj[skiptime][:,k] = 0
-        #data.feature[4][i][:] = 0
+        skipnum = int(500*(p/100))
+        randomnum = random.sample(range(0, 500), skipnum)
+        #pはスキップする数
+        for r in randomnum:
+            data.adj[skiptime][r,:] = 0
+            data.adj[skiptime][:,r] = 0
+            #data.feature[4][r][:] = 0
         
         
         optimizer = Optimizer(data.adj, data.feature, model, data_size)
         for t in range(5):
             optimizer.optimize(t)
-        optimizer.export_param(skiptime+1,k) 
+        optimizer.export_param(skiptime+1,p,k) 
     

@@ -40,15 +40,15 @@ attrs = []
 #data/DBLP/InComplete/
 
 
-def execute_data(skip,i) -> None:
+def execute_data(i,attempt) -> None:
 
     #alpha,betaの読み込み
     np_alpha = []
     np_beta = []
     #data/DBLP/Completemodel.param.data.fast
     #data/DBLP/InCompletemodel.param.data.fast
-
-    path = "experiment_data/NIPS/incomplete/t={}/drop={}/".format(skip+1,i)
+    #experiment_data/DBLP/incomplete/t=5/percent=3
+    path = "experiment_data/DBLP/incomplete/t=5/percent={}/attempt={}/".format(i,attempt)
     with open(path+"model.param.data.fast", "r") as f:
         lines = f.readlines()
         for index, line in enumerate(
@@ -298,6 +298,8 @@ def execute_data(skip,i) -> None:
 
 
 if __name__ == "__main__":
-    for skip in range(4):
-        for i in range(32):
-            execute_data(skip,i)
+    for i in  [30]:
+        for attempt in range(8,15):
+            execute_data(i,attempt)
+
+ 
