@@ -16,6 +16,11 @@ from init_real_data import init_real_data
 device = config.select_device
 
 
+class Interest(IntEnum):
+    RED = 2
+    BLUE = 1
+
+
 class Model(nn.Module):
     def __init__(self, alpha, beta):
         super().__init__()
@@ -45,7 +50,11 @@ class Optimizer:
         sim = torch.add(sim, 0.001)
 
         costs = torch.mul(edge, self.model.beta)
+        #print(costs[n[0],n[1]])
+        #print(t,edge[n[0],n[1]])
         costs = torch.add(costs, 0.001)
+    
+         
 
         reward = torch.sub(sim, costs)
         loss = -reward.sum()
@@ -57,8 +66,9 @@ class Optimizer:
         
 
 
-    def export_param(self,t,p,k):
-        with open("experiment_data/DBLP/incomplete/t={}/percent={}/attempt={}/model.param.data.fast".format(t,p,k), "w") as f:
+    def export_param(self,skiptime,p,k):
+
+        with open("experiment_data/DBLP/incomplete/t={}/attr/percent={}/attempt={}/model.param.data.fast".format(skiptime,p,k), "w") as f:
             max_alpha = 1.0
             max_beta = 1.0
 
@@ -72,41 +82,86 @@ class Optimizer:
 
 
 if __name__ == "__main__":
-    p=75
-    for k in range(15):
-        data = init_real_data()
+    for p in [5,15,30,50,75,100]:
+    #for p in [100]:
 
-        data_size = len(data.adj[0])
-
-        alpha = torch.from_numpy(
-            np.array(
-                [1.0 for i in range(data_size)],
-                dtype=np.float32,
-            ),
-        ).to(device)
-
-        beta = torch.from_numpy(
-            np.array(
-                [1.0 for i in range(data_size)],
-                dtype=np.float32,
-            ),
-        ).to(device)
-        model = Model(alpha, beta)
         skiptime = 4
+        for k in range(15):
+
+
+            data = init_real_data()
+
+            data_size = len(data.adj[0])
+
+            alpha = torch.from_numpy(
+            np.array(
+                        [1.0 for i in range(data_size)],
+                        dtype=np.float32,
+                    ),
+                ).to(device)
+
+            beta = torch.from_numpy(
+                    np.array(
+                        [1.0 for i in range(data_size)],
+                        dtype=np.float32,
+                    ),
+                ).to(device)
+            model = Model(alpha, beta)
+
+
+            persona = 5
+                #あるノードにi関する情報を取り除く
+                #list[tensor]のキモい構造なので
+            
+            #エッジの接続リスト
+            #edgeindex=data.adj[4][:,:].nonzero(as_tuple=False)
+
+            #エッジの本数
+            #edge_num = edgeindex.size()[0]
+      
+            #パーセントに応じて取り除く数を決める
+            #skipnum = int(edge_num*(p/100))
+
+            #skipindex = random.sample(range(0, edge_num), skipnum)
+            #for i in skipindex:
+            #    n = edgeindex[i]
+       
+                #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
+            #    data.adj[skiptime][n.tolist()[0],n.tolist()[1]]=0
+                #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
+                
+                
         
-        #あるノードにi関する情報を取り除く
-        #list[tensor]のキモい構造なので
-        skipnum = int(500*(p/100))
-        randomnum = random.sample(range(0, 500), skipnum)
-        #pはスキップする数
-        for r in randomnum:
-            data.adj[skiptime][r,:] = 0
-            data.adj[skiptime][:,r] = 0
-            #data.feature[4][r][:] = 0
+                #data.feature[4][r][:] = 0
+            #with open("experiment_data/DBLP/incomplete/t=4/percent={}/attempt={}/delete_index".format(p,k), "w") as f:
+            #    for i in skipindex:
+            #        f.write(
+            #                  "{}\n".format(str(i))
+            #                )
+
+            #属性値消す
+            skipnum = int(data_size*(p/100))
+            skipindex = random.sample(range(0, data_size), skipnum)
+            for i in skipindex:
+
+                #print(data.feature[4][i][:])
+                data.feature[4][i][:] = 0
+                #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
+                #data.adj[skiptime][n.tolist()[0],n.tolist()[1]]=0
+                #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
+                #print(data.feature[4][i][:])
+                #print(1111)
+                
         
-        
-        optimizer = Optimizer(data.adj, data.feature, model, data_size)
-        for t in range(5):
-            optimizer.optimize(t)
-        optimizer.export_param(skiptime+1,p,k) 
-    
+                #data.feature[4][r][:] = 0
+            with open("experiment_data/DBLP/incomplete/t=4/attr/percent={}/attempt={}/delete_index".format(p,k), "w") as f:
+                for i in skipindex:
+                    f.write(
+                              "{}\n".format(str(i))
+                    )
+
+            #print(data.adj[4][:,:].nonzero(as_tuple=False).size()) 
+            optimizer = Optimizer(data.adj, data.feature, model, data_size)
+            for t in range(5):
+                optimizer.optimize(t)
+            optimizer.export_param(skiptime,p,k)

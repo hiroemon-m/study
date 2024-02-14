@@ -22,6 +22,7 @@ from init_real_data import init_real_data
 os.environ["OMP_NUM_THREADS"] = "16"
 os.environ["MKL_NUM_THREADS"] = "16"
 os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
+
 print(torch.__config__.parallel_info())
 episodes = 32
 story_count = 32
@@ -36,20 +37,14 @@ TOTAL_TIME = 10
 #lr = 0.1
 p_gamma = 0.8
 attrs = []
-#data/DBLP/Complete/
-#data/DBLP/InComplete/
 
 
-def execute_data(i,attempt) -> None:
-
+def execute_data(percent,attempt) -> None:
+    path_def = "experiment_data/DBLP/incomplete/t=4/attr/percent={}/attempt={}".format(percent,attempt)
     #alpha,betaの読み込み
     np_alpha = []
     np_beta = []
-    #data/DBLP/Completemodel.param.data.fast
-    #data/DBLP/InCompletemodel.param.data.fast
-    #experiment_data/DBLP/incomplete/t=5/percent=3
-    path = "experiment_data/DBLP/incomplete/t=5/percent={}/attempt={}/".format(i,attempt)
-    with open(path+"model.param.data.fast", "r") as f:
+    with open(path_def+"/model.param.data.fast", "r") as f:
         lines = f.readlines()
         for index, line in enumerate(
             tqdm(lines, desc="load data", postfix="range", ncols=80)
@@ -88,7 +83,7 @@ def execute_data(i,attempt) -> None:
     )
    
     w = np.array(
-        [1e-2 for i in range(len(np_alpha))],
+        [1.0 for i in range(len(np_alpha))],
         dtype=np.float32,
     )
     torch.autograd.set_detect_anomaly(True)
@@ -98,15 +93,31 @@ def execute_data(i,attempt) -> None:
     N = len(np_alpha)
     del np_alpha, np_beta
 
-
+    """_summary_
+    setup data
+    """
     load_data = init_real_data()
+    delete_path = path_def+"/delete_index"
+    with open(delete_path, "r") as f:
+        delete_index = f.readlines()
+    edgeindex=load_data.adj[4][:,:].nonzero(as_tuple=False)
+    #print(edgeindex)
+    #print(delete_index)
+    print(delete_index)
+    print(edgeindex)
+    print("---------------before------------------")
+    print(torch.sum(load_data.adj[4].eq(1)).item())
 
-
-    #あるノードにi関する情報を取り除く
-    #list[tensor]のキモい構造なので
-    load_data.adj[4][i,:] = 0
-    load_data.adj[4][:,i] = 0
-    #data.feature[4][i][:] = 0
+    for i in delete_index:
+        #print(i)
+        n = edgeindex[int(i)]
+       
+        #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
+        load_data.adj[4][n.tolist()[0],n.tolist()[1]]=0
+        #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
+    print(torch.sum(load_data.adj[4].eq(1)).item())
+    #exit()
+    print(torch.sum(load_data.adj[LEARNED_TIME].eq(1)).item())
 
 
 
@@ -118,7 +129,7 @@ def execute_data(i,attempt) -> None:
         beta=beta,
     )
     #print(load_data.feature)
-    
+    print("field",torch.sum(field.edges.eq(1)).item())
     for episode in tqdm(
         range(episodes), desc="episode", postfix="range", ncols=100
     ):
@@ -149,7 +160,10 @@ def execute_data(i,attempt) -> None:
             #print("memory",memory)
             memory.append((reward, action_probs))
             #print("memory",memory[-1])
+        print(total_reward)
+        print("memory")
 
+ 
         if not memory:
             continue
         G, loss = 0, 0
@@ -194,6 +208,9 @@ def execute_data(i,attempt) -> None:
 
         for t in range(TOTAL_TIME - GENERATE_TIME):
             gc.collect()
+            #field.state()隣接行列、属性値を返す
+            #neighbor_state, feat = field.state()
+            #->部分観測(自分のエッジの接続、属性値の情報)にする
             neighbor_state, feat = field.state()
             #print("stae",neighbor_state)
             #print("feat",feat)
@@ -285,21 +302,19 @@ def execute_data(i,attempt) -> None:
         #print("---")
     
 
-    
-    np.save(path+"proposed_edge_auc", calc_log)
-    np.save(path+"proposed_edge_nll", calc_nll_log)
-    np.save(path+"proposed_attr_auc", attr_calc_log)
-    np.save(path+"proposed_attr_nll", attr_calc_nll_log)
-    np.save(path+"parameter",np.concatenate([alpha.detach(),beta.detach().numpy(),T,e],axis=0))
-    np.save(path+"rw_paramerter",np.concatenate([r.reshape(1,-1),w.reshape(1,-1)],axis=0))
-  
+    np.save(path_def+"/proposed_edge_auc", calc_log)
+    np.save(path_def+"/proposed_edge_nll", calc_nll_log)
+    np.save(path_def+"/proposed_attr_auc", attr_calc_log)
+    np.save(path_def+"/proposed_attr_nll", attr_calc_nll_log)
 
+
+    np.save(path_def+"/parameter",np.concatenate([alpha.to('cpu').detach().numpy(),beta.to('cpu').detach().numpy(),T,e],axis=0))
+    np.save(path_def+"/rw_paramerter",np.concatenate([r,w],axis=0))
 
 
 
 if __name__ == "__main__":
-    for i in  [30]:
-        for attempt in range(8,15):
-            execute_data(i,attempt)
-
- 
+    for percent in [5,15,30,50,75,100]:
+        for i in range(15):
+            print(percent,i)
+            execute_data(percent,i)

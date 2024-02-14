@@ -14,7 +14,6 @@ import csv
 # device="cpu"
 device = config.select_device
 
-
 class AgentPolicy(nn.Module):
     def __init__(self, T, e, r, w) -> None:
         super().__init__()
@@ -42,41 +41,20 @@ class AgentPolicy(nn.Module):
         #print(edges.size()) 32x32
         #print(attributes.size())32x2411
         tmp_tensor = self.W * torch.matmul(edges, attributes)
-        #tmp_tensor = torch.matmul(edges, attributes)
-        
-        #feat =  0.5*attributes + 0.5*tmp_tensor
         r = self.r
 
         r = r + 1e-8
         feat = r * attributes + tmp_tensor * (1 - r)
-        #print("feat",feat)
-        feat_prob = torch.tanh(feat)
-
-        #x = x.div((np.linalg.norm(feat.detach().clone()))*(np.linalg.norm(feat.detach().clone().t())))
-
+        feat_prob = feat
         # Compute similarity
         x = torch.mm(feat, feat.t())
         #print(x)
         x = x.div(self.T).exp().mul(self.e)
 
-        min_values = torch.min(x, dim=0).values
-        # # 各列の最大値 (dim=0 は列方向)
-        max_values = torch.max(x, dim=0).values
-        # Min-Max スケーリング
-        x = (x - min_values) / ((max_values - min_values) + 1e-4)+1e-4
-        #print(x[0])
-
         x = torch.tanh(x)
-
 
         return x, feat, feat_prob
 
-        # エッジの存在関数
-        # x = torch.sigmoid(x)
-        # x = torch.tanh(x)
-        # x = torch.relu(x)
-        # print("prob", x)
-        # return x, feat
 
 
 
