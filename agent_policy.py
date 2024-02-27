@@ -50,7 +50,7 @@ class AgentPolicy(nn.Module):
         x = torch.mm(feat, feat.t())
         #print(x)
         x = x.div(self.T).exp().mul(self.e)
-
+        x = torch.clamp(x, max=75,min=0)
         x = torch.tanh(x)
 
         return x, feat, feat_prob

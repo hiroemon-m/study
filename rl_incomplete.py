@@ -39,8 +39,8 @@ p_gamma = 0.8
 attrs = []
 
 
-def execute_data(percent,attempt) -> None:
-    path_def = "experiment_data/DBLP/incomplete/t=4/attr/percent={}/attempt={}".format(percent,attempt)
+def execute_data(percent,attempt,skiptime) -> None:
+    path_def = "experiment_data/NIPS/incomplete/t=4/edge/percent={}/attempt={}".format(percent,attempt)
     #alpha,betaの読み込み
     np_alpha = []
     np_beta = []
@@ -96,30 +96,31 @@ def execute_data(percent,attempt) -> None:
     """_summary_
     setup data
     """
+    ver = "edge"
     load_data = init_real_data()
     delete_path = path_def+"/delete_index"
     with open(delete_path, "r") as f:
         delete_index = f.readlines()
-    edgeindex=load_data.adj[4][:,:].nonzero(as_tuple=False)
-    #print(edgeindex)
-    #print(delete_index)
-    print(delete_index)
-    print(edgeindex)
-    print("---------------before------------------")
-    print(torch.sum(load_data.adj[4].eq(1)).item())
-
-    for i in delete_index:
-        #print(i)
-        n = edgeindex[int(i)]
-       
-        #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
-        load_data.adj[4][n.tolist()[0],n.tolist()[1]]=0
-        #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
-    print(torch.sum(load_data.adj[4].eq(1)).item())
-    #exit()
-    print(torch.sum(load_data.adj[LEARNED_TIME].eq(1)).item())
-
-
+    if ver == "edge":
+        print("edge")
+        edgeindex=load_data.adj[skiptime][:,:].nonzero(as_tuple=False)
+        #print(edgeindex)
+        #print(delete_index)
+        
+        for i in delete_index:
+            #print(i)
+            n = edgeindex[int(i)]
+        
+            #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
+            load_data.adj[skiptime][n.tolist()[0],n.tolist()[1]]=0
+            #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
+        #exit()
+    else:
+        print("attr")
+        print(delete_index)
+        for i in delete_index:
+            load_data.feature[skiptime][int(i)][:] = 0
+  
 
     field = Env(
         edges=load_data.adj[LEARNED_TIME].clone(),
@@ -224,7 +225,7 @@ def execute_data(percent,attempt) -> None:
             #print(action_probs[0])
             #print(predict_feat[0])
             reward = field.step(action_probs)
-
+            print(torch.isnan(predict_feat))
             target_prob = torch.ravel(predict_feat).to("cpu")
             del attr_probs
             gc.collect()
@@ -314,7 +315,9 @@ def execute_data(percent,attempt) -> None:
 
 
 if __name__ == "__main__":
-    for percent in [5,15,30,50,75,100]:
+
+    for percent in [75]:
+        skiptime=4
         for i in range(15):
             print(percent,i)
-            execute_data(percent,i)
+            execute_data(percent,i,skiptime)

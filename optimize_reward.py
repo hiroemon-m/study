@@ -67,22 +67,23 @@ class Optimizer:
 
 
     def export_param(self,skiptime,p,k):
+        pass
 
-        with open("experiment_data/DBLP/incomplete/t={}/attr/percent={}/attempt={}/model.param.data.fast".format(skiptime,p,k), "w") as f:
+        with open("experiment_data/NIPS/incomplete/t={}/edge/percent={}/attempt={}/model.param.data.fast".format(skiptime,p,k), "w") as f:
             max_alpha = 1.0
             max_beta = 1.0
 
             for i in range(self.size):
                 f.write(
-                    "{},{}\n".format(
+                   "{},{}\n".format(
                         self.model.alpha[i].item() / max_alpha,
-                        self.model.beta[i].item() / max_beta,
-                    )
+                       self.model.beta[i].item() / max_beta,
+                  )
                 )
 
 
 if __name__ == "__main__":
-    for p in [5,15,30,50,75,100]:
+    for p in [75]:
     #for p in [100]:
 
         skiptime = 4
@@ -114,38 +115,43 @@ if __name__ == "__main__":
                 #list[tensor]のキモい構造なので
             
             #エッジの接続リスト
-            #edgeindex=data.adj[4][:,:].nonzero(as_tuple=False)
+            
+            edgeindex=data.adj[skiptime][:,:].nonzero(as_tuple=False)
+
+                
+           
+           
 
             #エッジの本数
-            #edge_num = edgeindex.size()[0]
-      
+            edge_num = edgeindex.size()[0]
+            print(edge_num)
             #パーセントに応じて取り除く数を決める
-            #skipnum = int(edge_num*(p/100))
+            skipnum = int(edge_num*(p/100))
 
-            #skipindex = random.sample(range(0, edge_num), skipnum)
-            #for i in skipindex:
-            #    n = edgeindex[i]
+            skipindex = random.sample(range(0, edge_num), skipnum)
+            for i in skipindex:
+                n = edgeindex[i]
        
-                #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
-            #    data.adj[skiptime][n.tolist()[0],n.tolist()[1]]=0
-                #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
+                print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
+                data.adj[skiptime][n.tolist()[0],n.tolist()[1]]=0
+                print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
                 
                 
         
                 #data.feature[4][r][:] = 0
-            #with open("experiment_data/DBLP/incomplete/t=4/percent={}/attempt={}/delete_index".format(p,k), "w") as f:
-            #    for i in skipindex:
-            #        f.write(
-            #                  "{}\n".format(str(i))
-            #                )
+            with open("experiment_data/NIPS/incomplete/t=4/edge/percent={}/attempt={}/delete_index".format(p,k), "w") as f:
+                for i in skipindex:
+                    f.write(
+                              "{}\n".format(str(i))
+                            )
 
             #属性値消す
-            skipnum = int(data_size*(p/100))
-            skipindex = random.sample(range(0, data_size), skipnum)
-            for i in skipindex:
+            #skipnum = int(data_size*(p/100))
+            #skipindex = random.sample(range(0, data_size), skipnum)
+            #for i in skipindex:
 
                 #print(data.feature[4][i][:])
-                data.feature[4][i][:] = 0
+            #    data.feature[4][i][:] = 0
                 #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
                 #data.adj[skiptime][n.tolist()[0],n.tolist()[1]]=0
                 #print(data.adj[skiptime][n.tolist()[0],n.tolist()[1]])
@@ -154,11 +160,11 @@ if __name__ == "__main__":
                 
         
                 #data.feature[4][r][:] = 0
-            with open("experiment_data/DBLP/incomplete/t=4/attr/percent={}/attempt={}/delete_index".format(p,k), "w") as f:
-                for i in skipindex:
-                    f.write(
-                              "{}\n".format(str(i))
-                    )
+            #with open("experiment_data/DBLP/incomplete/t=4/edge/percent={}/attempt={}/delete_index".format(p,k), "w") as f:
+            #    for i in skipindex:
+            #        f.write(
+            #                  "{}\n".format(str(i))
+            #        )
 
             #print(data.adj[4][:,:].nonzero(as_tuple=False).size()) 
             optimizer = Optimizer(data.adj, data.feature, model, data_size)
